@@ -189,3 +189,22 @@ The agent can automatically call these tools based on user requests.
 - **Aspect Ratios**: 1:1, 4:3, 4:5, 5:4, 16:9, 9:16, 17:9
 - **Duration**: 4 seconds to 60 minutes (Pegasus 1.2)
 - **File Size**: Up to 5GB (configurable)
+
+## Samples
+
+Two sample scripts are provided in the `samples/` directory:
+
+### `direct_api_demo.py` - Direct API Usage
+Simple script that calls the Twelve Labs API directly without an LLM agent:
+```bash
+cd python
+uv run python packages/twelvelabs/samples/direct_api_demo.py
+```
+
+### `agent_video_demo.py` - Agentic Demo with LLM
+Full demo using an OpenAI-powered agent that orchestrates video operations:
+```bash
+cd python
+uv run python packages/twelvelabs/samples/agent_video_demo.py
+```
+Requires both `TWELVELABS_API_KEY` and `OPENAI_API_KEY` environment variables.
