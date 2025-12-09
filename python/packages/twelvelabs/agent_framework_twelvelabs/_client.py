@@ -298,12 +298,13 @@ class TwelveLabsClient:
 
     async def _simple_upload(self, file_path: str, index_id: str) -> str:
         """Upload smaller files using simple method."""
-        # Run sync SDK call in thread pool
-        task = await asyncio.to_thread(
-            self._client.tasks.create,
-            index_id=index_id,
-            video_file=file_path,
-        )
+        # SDK needs open file handle, not path string
+        with open(file_path, 'rb') as f:
+            task = await asyncio.to_thread(
+                self._client.tasks.create,
+                index_id=index_id,
+                video_file=f,
+            )
         return task.id if hasattr(task, 'id') else str(task)
 
     async def _url_upload(self, url: str, index_id: str) -> str:
