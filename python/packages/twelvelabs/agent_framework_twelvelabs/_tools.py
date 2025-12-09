@@ -338,7 +338,6 @@ class TwelveLabsTools:
     async def search_videos(
         self,
         query: str,
-        index_name: Optional[str] = None,
         limit: int = 10,
     ) -> Dict[str, Any]:
         """Search videos using a natural language query.
@@ -347,7 +346,6 @@ class TwelveLabsTools:
 
         Args:
             query: Natural language search query (e.g., "person walking in the park")
-            index_name: Name of index to search (defaults to 'default')
             limit: Maximum number of results to return (default 10)
 
         Returns:
@@ -366,7 +364,6 @@ class TwelveLabsTools:
         """
         search_results = await self.client.search_videos(
             query=query,
-            index_name=index_name,
             limit=limit,
         )
 

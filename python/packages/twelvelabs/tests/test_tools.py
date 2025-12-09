@@ -383,7 +383,6 @@ async def test_search_videos(tools, mock_client):
 
     mock_client.search_videos.assert_called_once_with(
         query="product demonstration",
-        index_name=None,
         limit=10,
     )
 
