@@ -5,11 +5,11 @@
 import asyncio
 import os
 from pathlib import Path
-from typing import Any, AsyncIterator, Callable, Dict, List, Optional, Union
+from typing import Any, AsyncIterator, Callable, ClassVar, Dict, List, Optional, Union
 
 import aiofiles
-from agent_framework._pydantic import AFBaseSettings, Field
-from pydantic import SecretStr
+from agent_framework._pydantic import AFBaseSettings
+from pydantic import Field, SecretStr
 from tenacity import (
     retry,
     retry_if_exception_type,
@@ -109,12 +109,9 @@ class TwelveLabsSettings(AFBaseSettings):
     default_index_name: str = Field(
         default="default",
         description="Default index name for videos",
-        json_schema_extra={"env": "TWELVELABS_DEFAULT_INDEX"},
     )
 
-    class Config:
-        env_prefix = "TWELVELABS_"
-        case_sensitive = False
+    env_prefix: ClassVar[str] = "TWELVELABS_"
 
 
 class RateLimiter:
@@ -727,9 +724,20 @@ class TwelveLabsClient:
                     if count >= limit:
                         break
 
-                    # Determine confidence based on score
+                    # Get rank (Marengo 3.0) or score (older versions)
+                    rank = getattr(result, "rank", None)
                     score = getattr(result, "score", None) or 0.0
-                    if score >= 0.8:
+
+                    # Determine confidence based on rank or score
+                    if rank is not None:
+                        # Marengo 3.0: lower rank = higher confidence
+                        if rank <= 3:
+                            confidence = "high"
+                        elif rank <= 10:
+                            confidence = "medium"
+                        else:
+                            confidence = "low"
+                    elif score >= 0.8:
                         confidence = "high"
                     elif score >= 0.5:
                         confidence = "medium"
@@ -741,10 +749,11 @@ class TwelveLabsClient:
                             video_id=getattr(result, "video_id", ""),
                             start_time=getattr(result, "start", None) or 0.0,
                             end_time=getattr(result, "end", None) or 0.0,
-                            score=score,
+                            score=float(rank) if rank is not None else score,
                             confidence=confidence,
                             thumbnail_url=getattr(result, "thumbnail_url", None),
                             metadata={
+                                "rank": rank,
                                 "modules": getattr(result, "modules", []),
                             },
                         )
